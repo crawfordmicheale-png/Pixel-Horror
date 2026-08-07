@@ -23,6 +23,7 @@
     { id: "bridge",  x: 23, y: 16, w: 11, h: 6,  name: "COMMAND BRIDGE",    lit: true },
     { id: "junction",x: 22, y: 25, w: 8,  h: 7,  name: "CORRIDOR JUNCTION", emergency: true },
     { id: "engine",  x: 36, y: 23, w: 16, h: 10, name: "REACTOR CONTROL",   glow: true },
+    { id: "hydro",   x: 3,  y: 14, w: 13, h: 9,  name: "HYDROPONICS",       lit: true },
   ];
 
   // --- Corridors: thin floor rectangles that overlap two rooms to link them.
@@ -33,6 +34,8 @@
     { x: 44, y: 12, w: 2,  h: 12 }, // C8 engineering <-> research (power door)
     { x: 33, y: 6,  w: 7,  h: 2 },  // C7 research <-> medical
     { x: 16, y: 6,  w: 7,  h: 2 },  // C6 medical <-> quarters
+    { x: 8,  y: 22, w: 2,  h: 4 },  // C9 dock <-> hydroponics (open, early access)
+    { x: 8,  y: 11, w: 2,  h: 4 },  // C10 hydroponics <-> quarters (power door)
   ];
 
   // --- Doors: gate a set of tiles until a condition is met. ---
@@ -49,14 +52,43 @@
       lockedMsg: "BLAST DOOR — no power. Restore main reactor to proceed.",
       openMsg: "Blast door disengaging.",
     },
+    {
+      id: "hydro_door", type: "power",
+      tiles: [ [8, 12], [9, 12] ],
+      lockedMsg: "MAINTENANCE HATCH — no power. It won't budge.",
+      openMsg: "The maintenance hatch grinds open. A shortcut, now.",
+    },
   ];
 
   // --- Items you can pick up. ---
+  // kind "key" items matter to progression; "salvage" are optional personal
+  // effects that reward exploration (tracked as SALVAGE x/y).
   STORY.items = [
     {
-      id: "flashlight", glyph: "f", x: 11, y: 27,
+      id: "flashlight", glyph: "f", x: 11, y: 27, kind: "key",
       name: "FLASHLIGHT",
       pickup: "You pry the flashlight from a dead responder's hand. The beam stutters, then holds.",
+    },
+    // ---- Salvage (optional collectibles) ----
+    {
+      id: "salvage_photo", glyph: "s", x: 4, y: 10, kind: "salvage",
+      name: "A CREW PHOTO",
+      pickup: "SALVAGE — A crew photo. Fourteen people squint into a sun they'll never see again. Someone drew a small heart around one of the faces.",
+    },
+    {
+      id: "salvage_tags", glyph: "s", x: 32, y: 4, kind: "salvage",
+      name: "DOG TAGS",
+      pickup: "SALVAGE — Dog tags: DOYLE, M. Still warm. You tell yourself that's the ventilation.",
+    },
+    {
+      id: "salvage_drawing", glyph: "s", x: 14, y: 21, kind: "salvage",
+      name: "A CHILD'S DRAWING",
+      pickup: "SALVAGE — A child's crayon drawing, pinned above a workbench: a stick-figure family, a green garden, and a tall black smudge standing just behind them.",
+    },
+    {
+      id: "salvage_ring", glyph: "s", x: 50, y: 11, kind: "salvage",
+      name: "A WEDDING RING",
+      pickup: "SALVAGE — A wedding ring on the lab floor, engraved: 'come home to the light.' The finger it belonged to is nowhere in sight.",
     },
   ];
 
@@ -194,6 +226,39 @@ The monitor insists otherwise.
 It has insisted for 63 days.`,
     },
 
+    // ------- HYDROPONICS -------
+    {
+      id: "log_hydro1", kind: "log", x: 4, y: 15,
+      source: "// DR. I. HOLT, BOTANY",
+      title: "Grow Log — Bay 3",
+      body:
+`The garden is the only place on this station that isn't afraid.
+
+The plants have gone strange since the dark came. They lean away from
+where the lamps used to be. New shoots come up black and they come up
+fast — a season overnight — and they all point the same way.
+
+Toward the lab. Toward the Object.
+
+I stopped running the grow-lights to save power for the reactor. God
+help me, I think the garden thanked me for it.`,
+    },
+    {
+      id: "log_hydro2", kind: "log", x: 14, y: 15,
+      source: "// MAINTENANCE HATCH — SCRAWL",
+      title: "scratched into the paint",
+      body:
+`whoever comes after —
+
+the hatch here goes straight up to the crew deck. we used it to move
+soil. now we use it to run.
+
+if the lights are on you can take it. if they're off, don't. it lives
+in the between-places and this is the most between place there is.
+
+hold your breath. count to nothing. it counts too.`,
+    },
+
     // ------- QUARTERS -------
     {
       id: "safe", kind: "safe", x: 8, y: 3,
@@ -254,6 +319,7 @@ it's almost lights-out. i can't wait.`,
       { x: 44, y: 27 }, // engineering
       { x: 26, y: 28 }, // junction
       { x: 30, y: 6 },  // medical/research hall
+      { x: 9, y: 18 },  // hydroponics
     ],
   };
 
@@ -302,6 +368,27 @@ You feel it lose its grip a hundred meters out. The shockwave is
 almost gentle. No more loop. No more window. No more patience.
 
 You burned it all down with them. Vance would understand.
+
+— END —`,
+    },
+    leave: {
+      cls: "bad",
+      title: "// UPLINK CLOSED",
+      body:
+`You look at the warning you could send and the charges you could arm,
+and you do neither. Not your station. Not your fourteen names.
+
+You pocket what salvage you found and walk back to the Kestrel through
+corridors that seem, somehow, disappointed to see you go.
+
+The beacon keeps cycling behind you — the same loop, the same lie about
+survivors, thrown out into the black for the next ship, and the next.
+
+AURORA-9 shrinks to a single amber window. It does not watch you leave.
+It is already watching the dark for whoever comes next.
+
+You told yourself it wasn't your choice to make.
+It was. You made it.
 
 — END —`,
     },

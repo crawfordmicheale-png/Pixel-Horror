@@ -126,6 +126,12 @@
       ctx.fillRect(sx + 4, sy + 6, 2, 4);
       ctx.fillStyle = "#e9dca0";
       ctx.fillRect(sx + 11, sy + 6, 2, 4);
+    } else if (it.glyph === "s") {
+      // salvage trinket — a small pale object with a glint
+      ctx.fillStyle = "#9aa0a8";
+      ctx.fillRect(sx + 6, sy + 7, 4, 4);
+      ctx.fillStyle = "#e9dca0";
+      ctx.fillRect(sx + 6, sy + 7, 2, 2);
     } else {
       ctx.fillStyle = "#c9b070";
       ctx.fillRect(sx + 5, sy + 6, 6, 5);

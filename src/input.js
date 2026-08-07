@@ -50,7 +50,14 @@
     return { x, y };
   };
 
-  I.holdingBreath = () => !!held.breath;
+  // On-screen (mobile) control state, driven by mobile.js.
+  I.touchAxis = { x: 0, y: 0 };
+  I.breathButton = false;
+  I.setTouchAxis = (x, y) => { I.touchAxis.x = x; I.touchAxis.y = y; };
+  I.setBreath = (b) => { I.breathButton = !!b; };
+  I.pressInteract = () => { interactEdge = true; };
+
+  I.holdingBreath = () => !!held.breath || I.breathButton;
 
   I.consumeInteract = function () {
     if (interactEdge) { interactEdge = false; return true; }
@@ -62,59 +69,21 @@
   };
 
   // ---- Touch controls (mobile): left half = virtual stick, right = interact ----
-  let touchStick = null;
-  I.touch = { x: 0, y: 0, active: false };
+  // Touch input is handled by the dedicated on-screen controls in mobile.js,
+  // which call I.setTouchAxis / I.setBreath / I.pressInteract. bindTouch is
+  // kept as a no-op so older call sites remain safe.
+  I.bindTouch = function () {};
 
-  function bindTouch(canvas) {
-    canvas.addEventListener("touchstart", (e) => {
-      for (const t of e.changedTouches) {
-        if (t.clientX < window.innerWidth / 2) {
-          touchStick = { id: t.identifier, ox: t.clientX, oy: t.clientY };
-          I.touch.active = true;
-        } else {
-          interactEdge = true;
-        }
-      }
-      e.preventDefault();
-    }, { passive: false });
-
-    canvas.addEventListener("touchmove", (e) => {
-      for (const t of e.changedTouches) {
-        if (touchStick && t.identifier === touchStick.id) {
-          const dx = t.clientX - touchStick.ox;
-          const dy = t.clientY - touchStick.oy;
-          const m = Math.hypot(dx, dy) || 1;
-          const cl = Math.min(m, 50) / 50;
-          I.touch.x = (dx / m) * cl;
-          I.touch.y = (dy / m) * cl;
-        }
-      }
-      e.preventDefault();
-    }, { passive: false });
-
-    const end = (e) => {
-      for (const t of e.changedTouches) {
-        if (touchStick && t.identifier === touchStick.id) {
-          touchStick = null;
-          I.touch = { x: 0, y: 0, active: false };
-        }
-      }
-    };
-    canvas.addEventListener("touchend", end);
-    canvas.addEventListener("touchcancel", end);
-  }
-
-  I.bindTouch = bindTouch;
-
-  // Merge touch into axis
+  // Merge on-screen joystick into axis (takes priority when engaged).
   const baseAxis = I.axis;
   I.axis = function () {
-    const a = baseAxis();
-    if (I.touch.active && (Math.abs(I.touch.x) > 0.15 || Math.abs(I.touch.y) > 0.15)) {
-      let x = I.touch.x, y = I.touch.y;
-      if (x && y && Math.hypot(x, y) > 1) { const m = Math.hypot(x, y); x /= m; y /= m; }
+    const tx = I.touchAxis.x, ty = I.touchAxis.y;
+    if (Math.abs(tx) > 0.12 || Math.abs(ty) > 0.12) {
+      let x = tx, y = ty;
+      const m = Math.hypot(x, y);
+      if (m > 1) { x /= m; y /= m; }
       return { x, y };
     }
-    return a;
+    return baseAxis();
   };
 })();

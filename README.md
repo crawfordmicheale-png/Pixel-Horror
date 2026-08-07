@@ -19,13 +19,25 @@ drone, hull groans, heartbeat, stingers) is synthesized live in your browser.
 
 ### Controls
 
+**Keyboard**
+
 | Input | Action |
 |---|---|
 | **WASD** / **Arrow keys** | Move (your flashlight follows your direction) |
 | **E** / **Space** / **Enter** | Interact · read logs · confirm |
 | **Shift** (hold) | Hold your breath — stand still and go quiet |
 | **Esc** | Close a log / cancel a keypad / skip the intro |
-| Mouse / touch | Keypads are clickable; on mobile, left half = move, right = interact |
+
+**Touch (mobile)** — on-screen controls appear automatically on touch devices:
+
+| Control | Action |
+|---|---|
+| **Left half of screen** | Floating virtual joystick — press and drag anywhere to move |
+| **E button** (bottom-right) | Interact · read logs · confirm · skip intro |
+| **HOLD BREATH button** | Press and hold to stand still and go quiet |
+| **Tap a log's dim background** | Close it. Keypads are tap-to-type; tap outside to cancel |
+
+The layout is landscape-friendly; turn your phone sideways for the best view.
 
 ---
 
@@ -55,6 +67,21 @@ The presence awakens when the power comes on. **Keep your beam on it to freeze
 it; look away and it closes in.** Bright rooms hold it back. If it catches you,
 you wake at the last lit doorway — keep to the light.
 
+At the bridge you get **three endings**: broadcast the warning, scuttle the
+station, or leave the loop running and walk away.
+
+### Decks & extras
+
+Seven connected decks: Docking Bay, Corridor Junction, Reactor Control,
+**Hydroponics** (an overgrown garden with its own maintenance-hatch shortcut
+that opens once power is on), Research Lab, Medical Bay, Crew Quarters, and the
+Command Bridge.
+
+- **11 crew logs** tell the full story; two of them hide the puzzle codes.
+- **4 pieces of optional salvage** — personal effects scattered across the
+  station for anyone who explores thoroughly.
+- An **inventory / progress HUD** tracks your gear, logs read, and salvage found.
+
 ---
 
 ## Project layout
@@ -71,7 +98,8 @@ src/
   lighting.js     # raycast flashlight cone with wall shadows + ambient light
   entities.js     # interactable consoles/items + THE PRESENCE (its AI)
   player.js       # movement, wall-sliding, facing, hold-breath
-  ui.js           # log reader, keypad puzzles, subtitles, objective, endings
+  ui.js           # log reader, keypad puzzles, subtitles, objective, inventory, endings
+  mobile.js       # on-screen touch controls (floating joystick + buttons)
   game.js         # main loop, camera, state machine, story beats
 ```
 

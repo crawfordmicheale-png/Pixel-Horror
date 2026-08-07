@@ -30,6 +30,7 @@
     el.subtitle = document.getElementById("subtitle");
     el.prompt = document.getElementById("prompt");
     el.objective = document.getElementById("objective");
+    el.inventory = document.getElementById("inventory");
 
     el.title = document.getElementById("title");
     el.end = document.getElementById("endscreen");
@@ -40,6 +41,14 @@
     // Keypad buttons
     el.keypad.querySelectorAll("button").forEach((b) => {
       b.addEventListener("click", () => onKeypadKey(b.dataset.k));
+    });
+
+    // Touch: tapping the dim background closes the reader / cancels the keypad.
+    el.reader.addEventListener("click", (e) => {
+      if (modal === "reader" && e.target === el.reader) closeReader();
+    });
+    el.keypad.addEventListener("click", (e) => {
+      if (modal === "keypad" && e.target === el.keypad) closeKeypad();
     });
 
     UI.isModal = () => modal !== null && modal !== "subtitleOnly";
@@ -72,6 +81,14 @@
     if (!html) { el.objective.classList.add("hidden"); return; }
     el.objective.innerHTML = html;
     el.objective.classList.remove("hidden");
+  };
+
+  // ---------------- Inventory / progress ----------------
+  UI.inventory = function (html) {
+    if (!el.inventory) return;
+    if (!html) { el.inventory.classList.add("hidden"); return; }
+    el.inventory.innerHTML = html;
+    el.inventory.classList.remove("hidden");
   };
 
   // ---------------- Log reader ----------------
@@ -146,10 +163,12 @@
       "<div style='margin-top:18px;display:flex;flex-direction:column;gap:10px'>" +
       "<button class='start-btn' id='choiceWarn'>BROADCAST THE WARNING</button>" +
       "<button class='start-btn' id='choiceBurn' style='background:#c8402f;color:#fff'>SCUTTLE THE STATION</button>" +
+      "<button class='start-btn' id='choiceLeave' style='background:#3b4a52;color:#e6d4a8'>LEAVE IT LOOPING &mdash; DO NOTHING</button>" +
       "</div>";
     el.reader.classList.remove("hidden");
     document.getElementById("choiceWarn").addEventListener("click", () => finishChoice("warn"));
     document.getElementById("choiceBurn").addEventListener("click", () => finishChoice("burn"));
+    document.getElementById("choiceLeave").addEventListener("click", () => finishChoice("leave"));
     audio.duck(true);
   };
   function finishChoice(which) {

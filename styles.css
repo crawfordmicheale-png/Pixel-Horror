@@ -242,6 +242,89 @@ html, body {
 }
 .objective b { color: var(--amber); font-weight: normal; }
 
+/* ---------- Inventory / progress ---------- */
+.inventory {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 55;
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  color: var(--amber-dim);
+  background: rgba(5,7,10,0.55);
+  padding: 8px 12px;
+  border-right: 2px solid var(--amber-dim);
+  text-align: right;
+  pointer-events: none;
+  max-width: 44%;
+}
+.inventory b { color: var(--amber); font-weight: normal; }
+.inventory .have { color: var(--green); }
+
+/* ---------- On-screen touch controls ---------- */
+#touch-controls {
+  position: fixed;
+  inset: 0;
+  z-index: 56;
+  pointer-events: none;
+  display: none;
+  touch-action: none;
+}
+#touch-controls.active { display: block; }
+body.has-touch #touch-controls.active { pointer-events: auto; }
+
+.joy { position: absolute; inset: 0; }
+.joy-base {
+  position: absolute;
+  width: 116px; height: 116px;
+  margin-left: -58px; margin-top: -58px;
+  border-radius: 50%;
+  border: 2px solid rgba(217,164,65,0.35);
+  background: radial-gradient(circle, rgba(217,164,65,0.10), rgba(10,14,18,0.28));
+  opacity: 0;
+  transition: opacity 0.12s ease;
+  pointer-events: none;
+}
+.joy-thumb {
+  position: absolute;
+  left: 50%; top: 50%;
+  width: 50px; height: 50px;
+  margin-left: -25px; margin-top: -25px;
+  border-radius: 50%;
+  background: rgba(217,164,65,0.5);
+  box-shadow: 0 0 18px rgba(217,164,65,0.45);
+}
+
+.touch-buttons {
+  position: absolute;
+  right: 22px; bottom: 24px;
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 16px;
+  align-items: center;
+  pointer-events: none;
+}
+.tbtn {
+  pointer-events: auto;
+  font-family: var(--mono);
+  border: 2px solid var(--amber-dim);
+  background: rgba(10,14,18,0.55);
+  color: var(--amber);
+  border-radius: 50%;
+  letter-spacing: 0.06em;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  transition: background 0.08s, transform 0.08s;
+}
+.tbtn-interact { width: 88px; height: 88px; font-size: 28px; }
+.tbtn-breath { width: 74px; height: 74px; font-size: 12px; line-height: 1.25; }
+.tbtn.down { background: var(--amber); color: #05070a; transform: scale(0.94); }
+
+/* Hide the desktop control hints on touch devices; show a touch legend feel. */
+body.has-touch .title-controls span:nth-child(1),
+body.has-touch .title-controls span:nth-child(2),
+body.has-touch .title-controls span:nth-child(3) { display: none; }
+
 /* ---------- End screen ---------- */
 .end-inner { text-align: center; max-width: min(640px, 88vw); animation: crtOn 0.6s ease-out; }
 .end-title {

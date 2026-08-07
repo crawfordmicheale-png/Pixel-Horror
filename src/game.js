@@ -92,6 +92,7 @@
     introTimer = 0;
     state = "intro";
     updateObjective();
+    updateInventory();
   }
 
   function onEndButton() {
@@ -105,6 +106,8 @@
       // return to title
       UI.hideEnd();
       UI.showTitle();
+      UI.objective(null);
+      UI.inventory(null);
       state = "title";
     }
   }
@@ -191,7 +194,7 @@
   // ---------------- Interaction ----------------
   function handleInteraction() {
     const near = E.nearest(player.cx(), player.cy(), 18);
-    if (!near) { UI.prompt(null); return; }
+    if (!near) { UI.prompt(null); input.consumeInteract(); return; }
 
     // Prompt text
     let label = "[ E ]";
@@ -220,14 +223,17 @@
     it.taken = true;
     audio.confirm();
     if (it.id === "flashlight") player.hasFlashlight = true;
-    UI.subtitle(it.pickup, 4.5);
+    UI.subtitle(it.pickup, it.kind === "salvage" ? 5.5 : 4.5);
     updateObjective();
+    updateInventory();
   }
 
   function useTerminal(t) {
     if (t.kind === "log") {
+      const firstRead = !t.used;
       t.used = true;
       UI.showReader(t);
+      if (firstRead) updateInventory();
       return;
     }
     if (t.kind === "reactor") {
@@ -280,6 +286,7 @@
     hasKeycard = true;
     UI.subtitle("You take the command keycard. Vance's contingency is now yours to make.", 5);
     updateObjective();
+    updateInventory();
   }
 
   function onEndingChosen(which) {
@@ -317,6 +324,22 @@
     else if (!World.isDoorOpen("bridge_door")) html = "OBJECTIVE<br/><b>Reach the Command Bridge.</b><br/>The command hatch will accept your keycard.";
     else html = "OBJECTIVE<br/><b>Make Vance's choice at the command console.</b>";
     UI.objective(html);
+  }
+
+  function updateInventory() {
+    if (!player) { UI.inventory(null); return; }
+    const logs = E.terminals().filter((t) => t.kind === "log");
+    const logsRead = logs.filter((t) => t.used).length;
+    const salvage = E.items().filter((it) => it.kind === "salvage");
+    const salvageGot = salvage.filter((it) => it.taken).length;
+
+    const fl = player.hasFlashlight ? "<span class='have'>✓ flashlight</span>" : "· flashlight";
+    const kc = hasKeycard ? "<span class='have'>✓ keycard</span>" : "· keycard";
+    UI.inventory(
+      `<b>GEAR</b><br/>${fl}<br/>${kc}<br/>` +
+      `<b>LOGS</b> ${logsRead}/${logs.length}<br/>` +
+      `<b>SALVAGE</b> ${salvageGot}/${salvage.length}`
+    );
   }
 
   // ---------------- Render ----------------

@@ -44,6 +44,20 @@
     <!-- Objective tracker -->
     <div id="objective" class="objective hidden"></div>
 
+    <!-- Inventory / progress -->
+    <div id="inventory" class="inventory hidden"></div>
+
+    <!-- On-screen touch controls (revealed on touch devices) -->
+    <div id="touch-controls" class="touch-controls">
+      <div id="joy" class="joy">
+        <div id="joy-base" class="joy-base"><div id="joy-thumb" class="joy-thumb"></div></div>
+      </div>
+      <div class="touch-buttons">
+        <button id="btn-breath" class="tbtn tbtn-breath">HOLD<br/>BREATH</button>
+        <button id="btn-interact" class="tbtn tbtn-interact">E</button>
+      </div>
+    </div>
+
     <!-- Title / start screen -->
     <div id="title" class="overlay">
       <div class="title-inner">
@@ -80,6 +94,7 @@
   <script src="src/entities.js"></script>
   <script src="src/player.js"></script>
   <script src="src/ui.js"></script>
+  <script src="src/mobile.js"></script>
   <script src="src/game.js"></script>
 </body>
 </html>
