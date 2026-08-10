@@ -17,6 +17,7 @@
     const joyThumb = document.getElementById("joy-thumb");
     const btnInteract = document.getElementById("btn-interact");
     const btnBreath = document.getElementById("btn-breath");
+    const btnLight = document.getElementById("btn-light");
     if (!layer) return;
 
     if (!isTouch) {
@@ -91,6 +92,18 @@
     };
     btnInteract.addEventListener("touchstart", fireInteract, { passive: false });
     btnInteract.addEventListener("click", fireInteract);
+
+    // ---- Flashlight toggle button ----
+    const fireToggle = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      input.pressToggle();
+      flash(btnLight);
+    };
+    if (btnLight) {
+      btnLight.addEventListener("touchstart", fireToggle, { passive: false });
+      btnLight.addEventListener("click", fireToggle);
+    }
 
     // ---- Hold-breath button (press-and-hold) ----
     const breathOn = (e) => { e.preventDefault(); e.stopPropagation(); input.setBreath(true); btnBreath.classList.add("down"); };

@@ -24,7 +24,8 @@ drone, hull groans, heartbeat, stingers) is synthesized live in your browser.
 | Input | Action |
 |---|---|
 | **WASD** / **Arrow keys** | Move (your flashlight follows your direction) |
-| **E** / **Space** / **Enter** | Interact · read logs · confirm |
+| **E** / **Space** / **Enter** | Interact · read logs · hide in / exit lockers · confirm |
+| **F** | Toggle the flashlight on/off (conserves battery) |
 | **Shift** (hold) | Hold your breath — stand still and go quiet |
 | **Esc** | Close a log / cancel a keypad / skip the intro |
 
@@ -33,7 +34,8 @@ drone, hull groans, heartbeat, stingers) is synthesized live in your browser.
 | Control | Action |
 |---|---|
 | **Left half of screen** | Floating virtual joystick — press and drag anywhere to move |
-| **E button** (bottom-right) | Interact · read logs · confirm · skip intro |
+| **E button** (bottom-right) | Interact · read logs · hide in lockers · confirm · skip intro |
+| **LIGHT button** | Toggle the flashlight on/off |
 | **HOLD BREATH button** | Press and hold to stand still and go quiet |
 | **Tap a log's dim background** | Close it. Keypads are tap-to-type; tap outside to cancel |
 
@@ -70,17 +72,34 @@ you wake at the last lit doorway — keep to the light.
 At the bridge you get **three endings**: broadcast the warning, scuttle the
 station, or leave the loop running and walk away.
 
+### Survival mechanics
+
+- **Flashlight battery.** Your beam drains a power cell as it burns. Toggle the
+  light off (**F**) to conserve — but with the beam off you can't freeze the
+  presence and you're nearly blind. Scavenge **power cells** to recharge; when
+  the battery dies, the beam gutters out entirely.
+- **Dread.** Time in the dark, and the presence's nearness, frays your
+  composure — the screen closes in with a cold vignette, grain thickens, and
+  the dark starts to *whisper* and show you things that aren't there. High dread
+  makes the presence sense you more easily. Standing in light calms you.
+- **Hiding lockers.** Duck into a locker (**E**) to break line of sight. The
+  presence loses your trail and can't reach you — wait out a hunt in the dark.
+
 ### Decks & extras
 
-Seven connected decks: Docking Bay, Corridor Junction, Reactor Control,
-**Hydroponics** (an overgrown garden with its own maintenance-hatch shortcut
-that opens once power is on), Research Lab, Medical Bay, Crew Quarters, and the
-Command Bridge.
+**Twelve connected decks:** Docking Bay, Corridor Junction, Reactor Control,
+Hydroponics, Research Lab, Medical Bay, Crew Quarters, Command Bridge, and the
+right wing — **Cryogenics**, **Observation Deck**, **Cargo Bay**, and a
+maintenance-keycard-gated **Containment** cell where the truth is kept.
 
-- **11 crew logs** tell the full story; two of them hide the puzzle codes.
-- **4 pieces of optional salvage** — personal effects scattered across the
-  station for anyone who explores thoroughly.
-- An **inventory / progress HUD** tracks your gear, logs read, and salvage found.
+- **18 crew logs** tell the full story; two of them hide the puzzle codes, and
+  the Containment logs reveal what the station really is.
+- A **second keycard tier** — the maintenance keycard (found in Cargo) opens
+  the Containment deck.
+- **4 pieces of optional salvage** — personal effects scattered for anyone who
+  explores thoroughly.
+- An **inventory / progress HUD** plus on-screen **battery** and **dread**
+  meters.
 
 ---
 

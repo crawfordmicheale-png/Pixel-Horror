@@ -135,6 +135,31 @@
     o.stop(ctx.currentTime + 0.5);
   };
 
+  // Breathy whisper from the dark — used by the dread system.
+  A.whisper = function () {
+    if (!ctx) return;
+    const src = ctx.createBufferSource();
+    src.buffer = noiseBuffer(1.4);
+    const filt = ctx.createBiquadFilter();
+    filt.type = "bandpass";
+    filt.frequency.setValueAtTime(AURORA.util.rand(900, 1500), ctx.currentTime);
+    filt.frequency.linearRampToValueAtTime(AURORA.util.rand(500, 800), ctx.currentTime + 1.3);
+    filt.Q.value = 5;
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(0.0001, ctx.currentTime);
+    g.gain.linearRampToValueAtTime(0.05, ctx.currentTime + 0.3);
+    g.gain.linearRampToValueAtTime(0.0001, ctx.currentTime + 1.4);
+    // slow tremolo for a "voice" quality
+    const lfo = ctx.createOscillator();
+    lfo.frequency.value = 6;
+    const lg = ctx.createGain();
+    lg.gain.value = 0.03;
+    lfo.connect(lg); lg.connect(g.gain);
+    lfo.start(); lfo.stop(ctx.currentTime + 1.4);
+    src.connect(filt); filt.connect(g); g.connect(master);
+    src.start(); src.stop(ctx.currentTime + 1.4);
+  };
+
   // Sharp stinger when the presence sees / grabs you.
   A.stinger = function () {
     if (!ctx) return;

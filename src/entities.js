@@ -13,6 +13,7 @@
 
   let items = [];      // remaining pickups
   let terminals = [];  // consoles/logs/puzzles
+  let lockers = [];    // hiding spots
 
   E.initObjects = function () {
     const S = AURORA.story;
@@ -20,10 +21,12 @@
     terminals = S.terminals.map((t) =>
       Object.assign({ used: false }, t)
     );
+    lockers = (S.lockers || []).map((l) => Object.assign({ occupied: false }, l));
   };
 
   E.items = () => items;
   E.terminals = () => terminals;
+  E.lockers = () => lockers;
 
   // ---------- Interaction lookup ----------
   // Returns the nearest interactable (item/terminal/door) within reach.
@@ -38,6 +41,10 @@
       const d = U.dist(px, py, (t.x + 0.5) * T, (t.y + 0.5) * T);
       if (d < bestD) { bestD = d; best = { type: "terminal", ref: t }; }
     });
+    lockers.forEach((l) => {
+      const d = U.dist(px, py, (l.x + 0.5) * T, (l.y + 0.5) * T);
+      if (d < bestD) { bestD = d; best = { type: "locker", ref: l }; }
+    });
     // Locked doors are interactable (to show why they're locked).
     AURORA.story.doors.forEach((d) => {
       if (World.isDoorOpen(d.id)) return;
@@ -51,10 +58,32 @@
 
   // ---------- Rendering (before lighting) ----------
   E.draw = function (ctx, cam, powered, time) {
+    lockers.forEach((l) => drawLocker(ctx, cam, l));
     terminals.forEach((t) => drawTerminal(ctx, cam, t, powered, time));
     items.forEach((it) => { if (!it.taken) drawItem(ctx, cam, it, time); });
     if (presence.active) presence.drawBody(ctx, cam, time);
   };
+
+  function drawLocker(ctx, cam, l) {
+    const sx = Math.round(l.x * T - cam.x);
+    const sy = Math.round(l.y * T - cam.y);
+    // upright locker cabinet
+    ctx.fillStyle = "#2b343c";
+    ctx.fillRect(sx + 2, sy + 1, 12, 14);
+    ctx.fillStyle = "#20272e";
+    ctx.fillRect(sx + 3, sy + 2, 10, 12);
+    // door seam + vents
+    ctx.fillStyle = "#39454e";
+    ctx.fillRect(sx + 8, sy + 2, 1, 12);
+    ctx.fillStyle = "#141a1f";
+    for (let i = 0; i < 3; i++) {
+      ctx.fillRect(sx + 4, sy + 4 + i * 2, 3, 1);
+      ctx.fillRect(sx + 10, sy + 4 + i * 2, 3, 1);
+    }
+    // handle glints slightly when occupied
+    ctx.fillStyle = l.occupied ? "#d9a441" : "#5a6a72";
+    ctx.fillRect(sx + 7, sy + 8, 2, 2);
+  }
 
   // ---------- Emissive pass (after lighting) ----------
   // Small self-lit glints so terminals read as tiny lights in the dark and
@@ -199,9 +228,18 @@
     const distPx = Math.hypot(dPx, dPy);
     const los = World.lineClear(ptx, pty, plx, ply);
 
+    // Hidden in a locker: the presence loses the thread quickly and can't grab you.
+    if (player.hidden) {
+      presence.lit = false;
+      presence.knows = Math.max(0, presence.knows - dt * 1.2);
+      presence.danger = Math.max(0, presence.danger - dt);
+      // still let it wander toward its last idea of you, then give up
+      if (presence.knows < 0.2) presence.state = "patrol";
+    }
+
     // --- Is the flashlight beam on the presence? Then it freezes/recoils. ---
     presence.lit = false;
-    if (player.hasFlashlight && !player.batteryDead && los && distPx < 110) {
+    if (player.beamActive() && los && distPx < 110) {
       const ang = U.angleTo(player.cx(), player.cy(), pcx(), pcy());
       if (Math.abs(U.angleDiff(ang, player.facing)) < 0.6) {
         presence.lit = true;
@@ -213,13 +251,15 @@
     const inLitRoom = powered && room && room.lit;
 
     // --- Awareness. Movement + proximity raise it; light + distance lower it. ---
+    // Dread makes you easier to sense; hiding makes you invisible.
     const moving = player.moving && !player.holdingBreath;
-    let senseR = moving ? 150 : 70;
+    const dreadBonus = 1 + (player.dread01 || 0) * 0.5;
+    let senseR = (moving ? 150 : 70) * dreadBonus;
     if (player.holdingBreath) senseR = 42;
-    if (los && distPx < senseR) {
+    if (!player.hidden && los && distPx < senseR) {
       presence.knows = Math.min(1, presence.knows + dt * (moving ? 1.6 : 0.9));
       presence.lastSeen = { x: plx, y: ply };
-    } else {
+    } else if (!player.hidden) {
       presence.knows = Math.max(0, presence.knows - dt * 0.35);
     }
 
@@ -268,7 +308,7 @@
     presence.danger = danger;
 
     // --- Catch! ---
-    if (distPx < 9 && !presence.lit && !inLitRoom && presence.caughtCooldown <= 0) {
+    if (distPx < 9 && !presence.lit && !inLitRoom && !player.hidden && presence.caughtCooldown <= 0) {
       AURORA.util.emit("caught");
       presence.caughtCooldown = 2;
     }

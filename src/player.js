@@ -14,13 +14,26 @@
     this.speed = 44;             // px/s
     this.facing = 0;            // radians; flashlight direction
     this.hasFlashlight = false;
+    this.flashlightOn = true;    // toggled with F / on-screen button
+    this.battery = 100;          // 0..100; drains while the beam is on
     this.moving = false;
     this.holdingBreath = false;
+    this.hidden = false;         // tucked inside a locker
     this.bob = 0;
     this.batteryFlicker = false; // brief beam stutter (atmosphere)
-    this.batteryDead = false;    // not used for game-over; reserved
     this.step = 0;
   }
+
+  // The beam is only "active" (cone + can freeze the presence) when the
+  // flashlight is owned, switched on, charged, and you're not hidden.
+  Player.prototype.beamActive = function () {
+    return this.hasFlashlight && this.flashlightOn && this.battery > 0 && !this.hidden;
+  };
+  Player.prototype.toggleFlashlight = function () {
+    if (!this.hasFlashlight) return false;
+    this.flashlightOn = !this.flashlightOn;
+    return this.flashlightOn;
+  };
 
   Player.prototype.spawnAtDock = function () {
     const S = AURORA.story;
@@ -41,6 +54,9 @@
   Player.prototype.tileY = function () { return (this.cy() / T) | 0; };
 
   Player.prototype.update = function (dt, input) {
+    // Hidden in a locker: no movement, no facing changes.
+    if (this.hidden) { this.moving = false; this.bob = 0; return; }
+
     const ax = input.axis();
     this.holdingBreath = input.holdingBreath();
     let mx = ax.x, my = ax.y;
@@ -68,10 +84,11 @@
     }
 
     // Rare beam flicker for unease.
-    this.batteryFlicker = this.hasFlashlight && U.chance(dt * 0.4);
+    this.batteryFlicker = this.beamActive() && U.chance(dt * 0.4);
   };
 
   Player.prototype.draw = function (ctx, cam, time) {
+    if (this.hidden) return; // the locker sprite stands in for you
     const sx = Math.round(this.cx() - cam.x);
     const sy = Math.round(this.cy() - cam.y + this.bob);
     // shadow
@@ -92,7 +109,7 @@
     // facing nub (lamp housing)
     const fx = Math.round(Math.cos(this.facing) * 5);
     const fy = Math.round(Math.sin(this.facing) * 5);
-    ctx.fillStyle = this.hasFlashlight ? "#e9dca0" : "#33403a";
+    ctx.fillStyle = this.beamActive() ? "#e9dca0" : "#33403a";
     ctx.fillRect(sx + fx - 1, sy + fy - 1, 2, 2);
 
     // Holding breath cue — a faint ring.
