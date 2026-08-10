@@ -24,6 +24,12 @@
     { id: "junction",x: 22, y: 25, w: 8,  h: 7,  name: "CORRIDOR JUNCTION", emergency: true },
     { id: "engine",  x: 36, y: 23, w: 16, h: 10, name: "REACTOR CONTROL",   glow: true },
     { id: "hydro",   x: 3,  y: 14, w: 13, h: 9,  name: "HYDROPONICS",       lit: true },
+    // ---- Right wing (reached post-power, via Research) ----
+    { id: "cryo",    x: 55, y: 4,  w: 14, h: 11, name: "CRYOGENICS",        lit: true },
+    { id: "observ",  x: 55, y: 17, w: 16, h: 10, name: "OBSERVATION DECK",  lit: true },
+    { id: "cargo",   x: 53, y: 29, w: 16, h: 10, name: "CARGO BAY",         emergency: true },
+    // ---- Containment: gated by the maintenance keycard ----
+    { id: "contain", x: 36, y: 34, w: 14, h: 9,  name: "CONTAINMENT",       glow: true },
   ];
 
   // --- Corridors: thin floor rectangles that overlap two rooms to link them.
@@ -36,6 +42,10 @@
     { x: 16, y: 6,  w: 7,  h: 2 },  // C6 medical <-> quarters
     { x: 8,  y: 22, w: 2,  h: 4 },  // C9 dock <-> hydroponics (open, early access)
     { x: 8,  y: 11, w: 2,  h: 4 },  // C10 hydroponics <-> quarters (power door)
+    { x: 52, y: 7,  w: 4,  h: 2 },  // CR1 research <-> cryo
+    { x: 61, y: 13, w: 2,  h: 5 },  // OB1 cryo <-> observation
+    { x: 60, y: 26, w: 2,  h: 4 },  // CG1 observation <-> cargo
+    { x: 42, y: 31, w: 2,  h: 4 },  // CT1 engine <-> containment (maint. keycard door)
   ];
 
   // --- Doors: gate a set of tiles until a condition is met. ---
@@ -57,6 +67,12 @@
       tiles: [ [8, 12], [9, 12] ],
       lockedMsg: "MAINTENANCE HATCH — no power. It won't budge.",
       openMsg: "The maintenance hatch grinds open. A shortcut, now.",
+    },
+    {
+      id: "contain_door", type: "maintenance",
+      tiles: [ [42, 33], [43, 33] ],
+      lockedMsg: "CONTAINMENT SEAL — requires a maintenance keycard.",
+      openMsg: "Maintenance keycard accepted. The containment seal parts.",
     },
   ];
 
@@ -90,6 +106,48 @@
       name: "A WEDDING RING",
       pickup: "SALVAGE — A wedding ring on the lab floor, engraved: 'come home to the light.' The finger it belonged to is nowhere in sight.",
     },
+    // ---- Batteries (recharge the flashlight) ----
+    {
+      id: "batt_engine", glyph: "b", x: 49, y: 25, kind: "battery",
+      name: "POWER CELL",
+      pickup: "You slot a fresh power cell into the flashlight. The beam brightens.",
+    },
+    {
+      id: "batt_cryo", glyph: "b", x: 58, y: 7, kind: "battery",
+      name: "POWER CELL",
+      pickup: "A power cell, frost-cold from the cryo bay. The flashlight drinks it down.",
+    },
+    {
+      id: "batt_observ", glyph: "b", x: 58, y: 22, kind: "battery",
+      name: "POWER CELL",
+      pickup: "Another power cell. You top off the flashlight while you still can.",
+    },
+    {
+      id: "batt_cargo1", glyph: "b", x: 55, y: 36, kind: "battery",
+      name: "POWER CELL",
+      pickup: "A crate of power cells, mostly looted. You take a good one.",
+    },
+    {
+      id: "batt_cargo2", glyph: "b", x: 66, y: 33, kind: "battery",
+      name: "POWER CELL",
+      pickup: "One more cell. Ballast against the dark.",
+    },
+    // ---- Maintenance keycard (gates Containment) ----
+    {
+      id: "maint_keycard", glyph: "c", x: 60, y: 37, kind: "maintkey",
+      name: "MAINTENANCE KEYCARD",
+      pickup: "A maintenance keycard, clipped to a work vest with no one in it. The containment deck is yours to open now.",
+    },
+  ];
+
+  // --- Lockers: hide inside to break the presence's line of sight. ---
+  STORY.lockers = [
+    { id: "lk_cryo1",   x: 56, y: 5 },
+    { id: "lk_cryo2",   x: 67, y: 13 },
+    { id: "lk_observ",  x: 69, y: 25 },
+    { id: "lk_cargo1",  x: 54, y: 30 },
+    { id: "lk_cargo2",  x: 67, y: 30 },
+    { id: "lk_med",     x: 22, y: 10 },
   ];
 
   // --- Interactive consoles / terminals / puzzles. ---
@@ -300,6 +358,132 @@ hold it so the dark can't hear you.
 it's almost lights-out. i can't wait.`,
     },
 
+    // ------- CRYOGENICS -------
+    {
+      id: "log_cryo1", kind: "log", x: 57, y: 5,
+      source: "// CRYO CONTROL — DR. A. FENN",
+      title: "Pod Manifest",
+      body:
+`We put four of them under. Doyle first. If sleep is dreamless and
+lightless, we reasoned, maybe the Object can't reach a mind that's
+already gone dark.
+
+We reasoned wrong.
+
+Under the ice they don't dream. They wait. Every pod's internal camera
+shows the same thing at 03:15 — eyes open, in the cold, in the dark,
+looking up at a ceiling that is looking back.
+
+POD 1 DOYLE ....... OCCUPIED (?)
+POD 2 HOLT ........ OCCUPIED (?)
+POD 3 REYES ....... OPEN — LID FORCED FROM INSIDE
+POD 4 [sealed] .... do not open. do NOT open. we did not fill pod 4.`,
+    },
+    {
+      id: "log_cryo2", kind: "log", x: 66, y: 13,
+      source: "// SCRATCHED INTO POD 3 GLASS",
+      title: "(from the inside)",
+      body:
+`IT IS WARM IN HERE NOW
+
+IT IS WARM EVERYWHERE I GO
+
+STOP LEAVING THE LIGHTS ON FOR ME I DON'T NEED THEM ANYMORE
+
+COME SEE`,
+    },
+
+    // ------- OBSERVATION DECK -------
+    {
+      id: "log_observ1", kind: "log", x: 57, y: 18,
+      source: "// DR. L. MARROW — OBSERVATION",
+      title: "Where It Came From",
+      body:
+`I come here to look at the thing we should have left alone.
+
+The comet is still out there off the port window — a dirty snowball the
+size of a city, tumbling through a dark so complete it has never once,
+in four billion years, been touched by a star.
+
+That is where the Object learned what it is. Not evil. Not hungry the
+way a wolf is hungry. Just... adapted. To a universe that is almost
+entirely darkness, with only the rarest, thinnest scattering of light.
+
+We are the light. We are the anomaly. And it has been so alone.`,
+    },
+    {
+      id: "log_observ2", kind: "log", x: 69, y: 18,
+      source: "// NAV BEACON CONFIG",
+      title: "Beacon — Loop Settings",
+      body:
+`DISTRESS LOOP: ACTIVE (day 63)
+MESSAGE: "survivors aboard, request immediate rescue"
+BROADCAST RADIUS: MAXIMUM
+
+Note (Vance): the message is a lie. There are no survivors. I keep the
+loop running anyway, at full power, screaming for help across the whole
+sector.
+
+Because a rescue ship will come with its lights blazing. And that is the
+only meal big enough to make it leave with them.
+
+God forgive me. The loop is bait. Shut it off, or aim it true.`,
+    },
+
+    // ------- CARGO BAY -------
+    {
+      id: "log_cargo1", kind: "log", x: 54, y: 37,
+      source: "// CARGO MANIFEST — AUTO",
+      title: "Inbound Crate C-7",
+      body:
+`CRATE C-7 — SURVEY RECOVERY, COMET CORE SAMPLE
+HANDLING: KEEP ILLUMINATED AT ALL TIMES
+HANDLING: DO NOT OPEN OUTSIDE CONTAINMENT
+
+03:02 — crate C-7 opened. Location: this cargo bay. In the dark.
+03:02 — authorizing crewmember: [none logged]
+03:03 — crate C-7 is empty
+03:03 — crate C-7 is empty
+03:03 — it isn't in the crate anymore. it's in the ship.`,
+    },
+
+    // ------- CONTAINMENT -------
+    {
+      id: "log_contain1", kind: "log", x: 38, y: 35,
+      source: "// CONTAINMENT — DR. L. MARROW",
+      title: "The Only Thing That Works",
+      body:
+`We tried everything. Fire starves in the airlocks. Cold makes it
+stronger. It walks through any door we can't keep lit.
+
+Only one thing holds it: a room lit so bright there is not one shadow
+for it to stand in. That is all containment is — a cage made of light.
+
+The reactor feeds that cage. If the power ever fails, the cage opens.
+
+So do not, whatever you are told, whatever you feel, cut the power to
+this deck. The moment you do, you are simply switching off the only
+wall between it and the rest of forever.`,
+    },
+    {
+      id: "log_contain2", kind: "log", x: 47, y: 41,
+      source: "// MARROW — FINAL, UNSENT",
+      title: "To whoever is brave or stupid enough",
+      body:
+`I understand it now, and understanding is the disease.
+
+It is not attacking us. It is answering us. Every light we ever lit was
+a word in a language we didn't know we were speaking, and it has crossed
+the whole cold dark to finally, finally answer.
+
+You have three ways to end the conversation.
+Warn the others, and let it starve out here in the quiet.
+Burn it, and burn the answer with it.
+Or say nothing, walk away, and leave the line open for the next voice.
+
+I couldn't choose. Marrow, L. — the last light on Aurora-9.`,
+    },
+
     // ------- BRIDGE -------
     {
       id: "broadcast", kind: "broadcast", x: 28, y: 17,
@@ -320,6 +504,10 @@ it's almost lights-out. i can't wait.`,
       { x: 26, y: 28 }, // junction
       { x: 30, y: 6 },  // medical/research hall
       { x: 9, y: 18 },  // hydroponics
+      { x: 61, y: 9 },  // cryogenics
+      { x: 62, y: 22 }, // observation
+      { x: 60, y: 34 }, // cargo
+      { x: 43, y: 38 }, // containment
     ],
   };
 

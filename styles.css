@@ -318,12 +318,14 @@ body.has-touch #touch-controls.active { pointer-events: auto; }
 }
 .tbtn-interact { width: 88px; height: 88px; font-size: 28px; }
 .tbtn-breath { width: 74px; height: 74px; font-size: 12px; line-height: 1.25; }
+.tbtn-light { width: 64px; height: 64px; font-size: 12px; }
 .tbtn.down { background: var(--amber); color: #05070a; transform: scale(0.94); }
 
 /* Hide the desktop control hints on touch devices; show a touch legend feel. */
 body.has-touch .title-controls span:nth-child(1),
 body.has-touch .title-controls span:nth-child(2),
-body.has-touch .title-controls span:nth-child(3) { display: none; }
+body.has-touch .title-controls span:nth-child(3),
+body.has-touch .title-controls span:nth-child(4) { display: none; }
 
 /* ---------- End screen ---------- */
 .end-inner { text-align: center; max-width: min(640px, 88vw); animation: crtOn 0.6s ease-out; }

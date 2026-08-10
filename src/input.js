@@ -8,6 +8,7 @@
   const held = {};
   let interactEdge = false; // consumed once per press
   let escEdge = false;
+  let toggleEdge = false;   // flashlight on/off
 
   const MAP = {
     ArrowUp: "up", KeyW: "up",
@@ -28,6 +29,7 @@
       e.preventDefault();
     }
     if (e.code === "Escape") escEdge = true;
+    if (e.code === "KeyF") { toggleEdge = true; e.preventDefault(); }
   });
 
   window.addEventListener("keyup", (e) => {
@@ -56,6 +58,12 @@
   I.setTouchAxis = (x, y) => { I.touchAxis.x = x; I.touchAxis.y = y; };
   I.setBreath = (b) => { I.breathButton = !!b; };
   I.pressInteract = () => { interactEdge = true; };
+  I.pressToggle = () => { toggleEdge = true; };
+
+  I.consumeToggle = function () {
+    if (toggleEdge) { toggleEdge = false; return true; }
+    return false;
+  };
 
   I.holdingBreath = () => !!held.breath || I.breathButton;
 

@@ -241,7 +241,9 @@
     for (let i = 2; i < T; i += 4) ctx.fillRect(sx, sy + i, T, 2); // ridges
     // hazard chevrons
     const type = doorState[id].def.type;
-    ctx.fillStyle = type === "power" ? "#c8402f" : "#d9a441";
+    ctx.fillStyle = type === "power" ? "#c8402f"
+      : type === "maintenance" ? "#4aa3c8"
+      : "#d9a441";
     ctx.fillRect(sx + T / 2 - 1, sy + 2, 2, T - 4);
   }
 

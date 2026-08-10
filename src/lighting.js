@@ -102,15 +102,20 @@
     carveRooms(cam, powered, time);
 
     // 3) Player halo — always a faint pool so you see your own feet.
+    // With the beam off (or dead battery) it shrinks to near-blindness.
     const px = player.cx(), py = player.cy();
-    const haloR = player.hasFlashlight ? 30 : 22;
-    carveLight(cam, px, py, 0, Math.PI * 2, haloR, 20, player.hasFlashlight ? 0.85 : 0.55);
+    const beam = player.beamActive();
+    const haloR = beam ? 30 : 18;
+    carveLight(cam, px, py, 0, Math.PI * 2, haloR, 20, beam ? 0.85 : 0.42);
 
     // 4) Flashlight cone (raycast, with wall shadows + a subtle flicker).
-    if (player.hasFlashlight) {
-      const flick = 0.9 + U.flicker(time * 3, 1) * 0.12 - (player.batteryFlicker ? 0.25 : 0);
+    if (player.beamActive()) {
+      // Low battery makes the beam gutter and shrink.
+      const low = player.battery < 22 ? (player.battery / 22) : 1;
+      const lowFlick = player.battery < 22 ? (U.flicker(time * 9, 3) > 0.4 ? 1 : 0.45) : 1;
+      const flick = (0.9 + U.flicker(time * 3, 1) * 0.12 - (player.batteryFlicker ? 0.25 : 0)) * lowFlick;
       const half = 0.52;
-      const R = 96 * flick;
+      const R = (96 * (0.6 + 0.4 * low)) * flick;
       const dir = player.facing;
       carveLight(cam, px, py, dir - half, dir + half, R, 40, 1.0);
       // warm amber tint in the beam
@@ -141,6 +146,20 @@
       );
       g.addColorStop(0, "rgba(0,0,0,0)");
       g.addColorStop(1, `rgba(20,0,0,${0.55 * f})`);
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, lc.width, lc.height);
+    }
+
+    // 9) Dread — a cold, breathing edge-darkness as your composure frays.
+    const dread = opts.dread || 0;
+    if (dread > 0.02) {
+      const pulse = 0.6 + Math.sin(time * (2 + dread * 4)) * 0.4 * dread;
+      const g = ctx.createRadialGradient(
+        lc.width / 2, lc.height / 2, lc.height * (0.5 - 0.25 * dread),
+        lc.width / 2, lc.height / 2, lc.height * 0.85
+      );
+      g.addColorStop(0, "rgba(0,0,0,0)");
+      g.addColorStop(1, `rgba(6,10,22,${0.5 * dread * pulse})`);
       ctx.fillStyle = g;
       ctx.fillRect(0, 0, lc.width, lc.height);
     }
