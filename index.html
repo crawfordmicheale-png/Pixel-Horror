@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>STATION AURORA-9</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div id="frame">
+    <canvas id="game"></canvas>
+
+    <!-- Narrative / log overlay -->
+    <div id="reader" class="overlay hidden">
+      <div class="reader-panel">
+        <div class="reader-head">
+          <span id="reader-source">// LOG</span>
+          <span class="reader-hint">[ E / ESC ] close</span>
+        </div>
+        <div id="reader-title" class="reader-title"></div>
+        <div id="reader-body" class="reader-body"></div>
+      </div>
+    </div>
+
+    <!-- Keypad overlay -->
+    <div id="keypad" class="overlay hidden">
+      <div class="keypad-panel">
+        <div class="keypad-label" id="keypad-label">ENTER ACCESS CODE</div>
+        <div class="keypad-display" id="keypad-display">_ _ _ _</div>
+        <div class="keypad-grid">
+          <button data-k="1">1</button><button data-k="2">2</button><button data-k="3">3</button>
+          <button data-k="4">4</button><button data-k="5">5</button><button data-k="6">6</button>
+          <button data-k="7">7</button><button data-k="8">8</button><button data-k="9">9</button>
+          <button data-k="clr">CLR</button><button data-k="0">0</button><button data-k="ok">OK</button>
+        </div>
+        <div class="keypad-hint">[ ESC ] cancel</div>
+      </div>
+    </div>
+
+    <!-- Subtitle / prompt line -->
+    <div id="subtitle" class="subtitle"></div>
+    <div id="prompt" class="prompt hidden"></div>
+
+    <!-- Objective tracker -->
+    <div id="objective" class="objective hidden"></div>
+
+    <!-- Inventory / progress -->
+    <div id="inventory" class="inventory hidden"></div>
+
+    <!-- On-screen touch controls (revealed on touch devices) -->
+    <div id="touch-controls" class="touch-controls">
+      <div id="joy" class="joy">
+        <div id="joy-base" class="joy-base"><div id="joy-thumb" class="joy-thumb"></div></div>
+      </div>
+      <div class="touch-buttons">
+        <button id="btn-breath" class="tbtn tbtn-breath">HOLD<br/>BREATH</button>
+        <button id="btn-interact" class="tbtn tbtn-interact">E</button>
+      </div>
+    </div>
+
+    <!-- Title / start screen -->
+    <div id="title" class="overlay">
+      <div class="title-inner">
+        <div class="title-main">STATION<br/>AURORA&#8209;9</div>
+        <div class="title-sub">a pixel horror</div>
+        <button id="startBtn" class="start-btn">BOOT SEQUENCE</button>
+        <div class="title-controls">
+          <span>WASD / ARROWS — move</span>
+          <span>E — interact &middot; read</span>
+          <span>SHIFT — hold breath (stay still &amp; quiet)</span>
+          <span>headphones recommended</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Death / ending screen -->
+    <div id="endscreen" class="overlay hidden">
+      <div class="end-inner">
+        <div id="end-title" class="end-title"></div>
+        <div id="end-body" class="end-body"></div>
+        <button id="endBtn" class="start-btn">CONTINUE</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Load order matters: classic scripts share the AURORA global so the game
+       runs by simply opening index.html (no build step, no local server). -->
+  <script src="src/util.js"></script>
+  <script src="src/audio.js"></script>
+  <script src="src/input.js"></script>
+  <script src="src/story.js"></script>
+  <script src="src/world.js"></script>
+  <script src="src/lighting.js"></script>
+  <script src="src/entities.js"></script>
+  <script src="src/player.js"></script>
+  <script src="src/ui.js"></script>
+  <script src="src/mobile.js"></script>
+  <script src="src/game.js"></script>
+</body>
+</html>
