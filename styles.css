@@ -124,6 +124,13 @@ html, body {
   color: var(--amber-dim);
   letter-spacing: 0.08em;
 }
+.build-stamp {
+  margin-top: 26px;
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  color: #4a3f28;
+  text-transform: uppercase;
+}
 
 /* ---------- Log reader ---------- */
 .reader-panel {
