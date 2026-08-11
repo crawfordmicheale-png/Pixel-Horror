@@ -29,6 +29,7 @@
 
     el.subtitle = document.getElementById("subtitle");
     el.prompt = document.getElementById("prompt");
+    el.gaze = document.getElementById("gaze");
     el.objective = document.getElementById("objective");
     el.inventory = document.getElementById("inventory");
 
@@ -74,6 +75,15 @@
     if (!text) { el.prompt.classList.add("hidden"); return; }
     el.prompt.textContent = text;
     el.prompt.classList.remove("hidden");
+  };
+
+  // ---------------- Flashlight scanner readout ----------------
+  UI.gaze = function (target) {
+    if (!el.gaze) return;
+    if (!target) { el.gaze.classList.remove("show"); return; }
+    el.gaze.textContent = target.name;
+    el.gaze.classList.toggle("contact", target.kind === "presence");
+    el.gaze.classList.add("show");
   };
 
   // ---------------- Objective ----------------

@@ -56,13 +56,170 @@
     return best;
   };
 
+  // ---------- Beam scanner: identify what the flashlight is pointed at ----------
+  function itemLabel(it) {
+    if (it.kind === "battery") return "POWER CELL";
+    if (it.kind === "salvage") return "PERSONAL EFFECT";
+    if (it.kind === "maintkey") return "MAINTENANCE KEYCARD";
+    if (it.kind === "auth") return "CONTAINMENT OVERRIDE";
+    return it.name || "ITEM";
+  }
+  function termLabel(t) {
+    return t.kind === "reactor" ? "REACTOR CONSOLE"
+      : t.kind === "safe" ? "CAPTAIN'S SAFE"
+      : t.kind === "broadcast" ? "COMMAND CONSOLE"
+      : "CREW LOG TERMINAL";
+  }
+  function doorLabel(d) {
+    return d.type === "power" ? "BLAST DOOR"
+      : d.type === "maintenance" ? "CONTAINMENT SEAL"
+      : "COMMAND HATCH";
+  }
+
+  // Returns { name, kind, x, y } for the object most directly in the beam.
+  E.beamTarget = function (player) {
+    if (!player.beamActive()) return null;
+    const px = player.cx(), py = player.cy();
+    const dir = player.facing, half = 0.56, R = 108;
+    let best = null, bestScore = Infinity;
+    const consider = (cx, cy, name, kind) => {
+      const d = Math.hypot(cx - px, cy - py);
+      if (d > R || d < 3) return;
+      const ang = Math.atan2(cy - py, cx - px);
+      const ad = Math.abs(U.angleDiff(ang, dir));
+      if (ad > half) return;
+      if (!World.lineClear(px / T, py / T, cx / T, cy / T)) return;
+      const score = ad * 46 + d * 0.28; // prefer on-axis, then nearby
+      if (score < bestScore) { bestScore = score; best = { name, kind, x: cx, y: cy }; }
+    };
+    items.forEach((it) => { if (!it.taken) consider((it.x + 0.5) * T, (it.y + 0.5) * T, itemLabel(it), "item"); });
+    terminals.forEach((t) => consider((t.x + 0.5) * T, (t.y + 0.5) * T, termLabel(t), "term"));
+    lockers.forEach((l) => consider((l.x + 0.5) * T, (l.y + 0.5) * T, "SUPPLY LOCKER", "locker"));
+    (AURORA.story.props || []).forEach((p) => {
+      if (p.label) consider((p.x + 0.5) * T, (p.y + 0.5) * T, p.label, "prop");
+    });
+    AURORA.story.doors.forEach((d) => {
+      if (World.isDoorOpen(d.id)) return;
+      d.tiles.forEach(([tx, ty]) => consider((tx + 0.5) * T, (ty + 0.5) * T, doorLabel(d), "door"));
+    });
+    if (presence.active) consider(pcx(), pcy(), "◄ CONTACT ►", "presence");
+    return best;
+  };
+
   // ---------- Rendering (before lighting) ----------
   E.draw = function (ctx, cam, powered, time) {
+    (AURORA.story.props || []).forEach((p) => drawProp(ctx, cam, p, time));
     lockers.forEach((l) => drawLocker(ctx, cam, l));
     terminals.forEach((t) => drawTerminal(ctx, cam, t, powered, time));
     items.forEach((it) => { if (!it.taken) drawItem(ctx, cam, it, time); });
     if (presence.active) presence.drawBody(ctx, cam, time);
   };
+
+  function drawProp(ctx, cam, p, time) {
+    const sx = Math.round(p.x * T - cam.x);
+    const sy = Math.round(p.y * T - cam.y);
+    // Cheap cull.
+    if (sx < -T || sy < -T || sx > AURORA.VIEW_W + T || sy > AURORA.VIEW_H + T) return;
+    switch (p.kind) {
+      case "body": {
+        ctx.fillStyle = "#2a2320"; ctx.fillRect(sx + 2, sy + 7, 12, 5);   // torso
+        ctx.fillStyle = "#3a2f2a"; ctx.fillRect(sx + 1, sy + 8, 3, 3);    // sprawled arm
+        ctx.fillStyle = "#6b5a50"; ctx.fillRect(sx + 12, sy + 6, 3, 3);   // pale head
+        ctx.fillStyle = "#140b0a"; ctx.fillRect(sx + 2, sy + 11, 12, 2);  // pooled dark
+        break;
+      }
+      case "bunk": {
+        ctx.fillStyle = "#232c33"; ctx.fillRect(sx + 1, sy + 4, 14, 9);   // frame
+        ctx.fillStyle = "#39454e"; ctx.fillRect(sx + 1, sy + 4, 14, 2);
+        ctx.fillStyle = "#4a3f36"; ctx.fillRect(sx + 2, sy + 7, 12, 5);   // mattress
+        ctx.fillStyle = "#5a5048"; ctx.fillRect(sx + 10, sy + 7, 4, 3);   // pillow
+        break;
+      }
+      case "medbed": {
+        ctx.fillStyle = "#2b333a"; ctx.fillRect(sx + 3, sy + 3, 10, 11);
+        ctx.fillStyle = "#c9d2d6"; ctx.fillRect(sx + 4, sy + 4, 8, 8);    // white sheet
+        ctx.fillStyle = "#9aa6ab"; ctx.fillRect(sx + 4, sy + 9, 8, 3);
+        ctx.fillStyle = "#1a2026"; ctx.fillRect(sx + 4, sy + 4, 8, 1);
+        break;
+      }
+      case "plant": {
+        const sway = Math.round(Math.sin(time * 1.5 + p.x) * 1);
+        ctx.fillStyle = "#0e1a12"; ctx.fillRect(sx + 6, sy + 8, 4, 6);    // pot/stalk
+        ctx.fillStyle = "#132a1a";
+        ctx.fillRect(sx + 3 + sway, sy + 2, 4, 7);                        // black fronds
+        ctx.fillRect(sx + 9 - sway, sy + 1, 4, 8);
+        ctx.fillStyle = "#1f4a2c"; ctx.fillRect(sx + 7 + sway, sy, 2, 5);
+        break;
+      }
+      case "bench": {
+        ctx.fillStyle = "#2c353c"; ctx.fillRect(sx + 1, sy + 6, 14, 4);
+        ctx.fillStyle = "#3c474f"; ctx.fillRect(sx + 1, sy + 6, 14, 1);
+        ctx.fillStyle = "#5a7d86"; ctx.fillRect(sx + 3, sy + 4, 2, 2);    // glassware
+        ctx.fillStyle = "#7fae9a"; ctx.fillRect(sx + 8, sy + 3, 2, 3);
+        break;
+      }
+      case "core": {
+        // A tall reactor column with a pulsing green heart.
+        const pulse = 0.5 + Math.sin(time * 3) * 0.4;
+        ctx.fillStyle = "#1a232b"; ctx.fillRect(sx + 2, sy - 4, 12, 20);
+        ctx.fillStyle = "#0c1116"; ctx.fillRect(sx + 4, sy - 2, 8, 16);
+        ctx.fillStyle = `rgba(70,200,130,${0.5 + pulse * 0.5})`;
+        ctx.fillRect(sx + 6, sy + 2, 4, 9);                               // core glow
+        ctx.fillStyle = "#39454e"; ctx.fillRect(sx + 2, sy + 6, 12, 2);
+        break;
+      }
+      case "pod":
+      case "podopen": {
+        ctx.fillStyle = "#222c33"; ctx.fillRect(sx + 2, sy, 12, 15);      // pod shell
+        ctx.fillStyle = "#39454e"; ctx.fillRect(sx + 2, sy, 12, 2);
+        if (p.kind === "pod") {
+          ctx.fillStyle = "#16303f"; ctx.fillRect(sx + 4, sy + 2, 8, 11); // frosted glass
+          ctx.fillStyle = "#25506a"; ctx.fillRect(sx + 5, sy + 3, 6, 4);
+          // faint occupant
+          ctx.fillStyle = "#0e1a22"; ctx.fillRect(sx + 6, sy + 5, 4, 7);
+        } else {
+          ctx.fillStyle = "#05080a"; ctx.fillRect(sx + 4, sy + 2, 8, 11); // black open cavity
+          ctx.fillStyle = "#2a3238"; ctx.fillRect(sx + 3, sy + 2, 2, 11); // torn-open lid
+        }
+        break;
+      }
+      case "comet": {
+        // A window with the tumbling comet beyond.
+        ctx.fillStyle = "#05070b"; ctx.fillRect(sx - 6, sy - 4, 26, 22);  // void
+        ctx.fillStyle = "#0a0e16"; ctx.fillRect(sx - 6, sy - 4, 26, 2);
+        // stars
+        ctx.fillStyle = "#3a4358";
+        ctx.fillRect(sx - 3, sy + 2, 1, 1); ctx.fillRect(sx + 14, sy + 8, 1, 1);
+        ctx.fillRect(sx + 6, sy - 1, 1, 1);
+        // comet body
+        ctx.fillStyle = "#1c1f28"; ctx.fillRect(sx + 4, sy + 6, 8, 6);
+        ctx.fillStyle = "#2a2e3a"; ctx.fillRect(sx + 5, sy + 6, 5, 3);
+        ctx.fillStyle = "#12151c"; ctx.fillRect(sx + 6, sy + 8, 3, 2);    // the dark that drinks light
+        break;
+      }
+      case "crate":
+      case "crateopen": {
+        ctx.fillStyle = "#4a3f2a"; ctx.fillRect(sx + 2, sy + 4, 12, 11);  // crate
+        ctx.fillStyle = "#5c4f36"; ctx.fillRect(sx + 2, sy + 4, 12, 2);
+        ctx.fillStyle = "#2f2818";
+        ctx.fillRect(sx + 2, sy + 9, 12, 1); ctx.fillRect(sx + 8, sy + 4, 1, 11);
+        if (p.kind === "crateopen") {
+          ctx.fillStyle = "#05080a"; ctx.fillRect(sx + 4, sy + 6, 8, 6);  // empty black interior
+          ctx.fillStyle = "#c8402f"; ctx.fillRect(sx + 3, sy + 3, 3, 1);  // hazard tag
+        }
+        break;
+      }
+      case "cradle": {
+        // Empty pedestal at the cage's heart, ringed with dead containment lamps.
+        ctx.fillStyle = "#1a232b"; ctx.fillRect(sx + 3, sy + 6, 10, 8);
+        ctx.fillStyle = "#2a333b"; ctx.fillRect(sx + 5, sy + 2, 6, 5);
+        ctx.fillStyle = "#3a2f14"; ctx.fillRect(sx + 6, sy + 3, 4, 3);    // dead socket
+        ctx.fillStyle = "#c8402f";
+        ctx.fillRect(sx + 2, sy + 5, 1, 1); ctx.fillRect(sx + 13, sy + 5, 1, 1); // dead lamps
+        break;
+      }
+    }
+  }
 
   function drawLocker(ctx, cam, l) {
     const sx = Math.round(l.x * T - cam.x);
@@ -148,22 +305,33 @@
     const sx = Math.round(it.x * T - cam.x);
     const sy = Math.round(it.y * T - cam.y) + Math.round(Math.sin(time * 2 + it.x) * 1);
     if (it.glyph === "f") {
-      // flashlight sprite
-      ctx.fillStyle = "#c9b070";
-      ctx.fillRect(sx + 5, sy + 6, 6, 4);
-      ctx.fillStyle = "#8a7840";
-      ctx.fillRect(sx + 4, sy + 6, 2, 4);
-      ctx.fillStyle = "#e9dca0";
-      ctx.fillRect(sx + 11, sy + 6, 2, 4);
+      // flashlight — barrel + bright lens
+      ctx.fillStyle = "#8a7840"; ctx.fillRect(sx + 4, sy + 6, 7, 4);
+      ctx.fillStyle = "#c9b070"; ctx.fillRect(sx + 5, sy + 6, 5, 2);
+      ctx.fillStyle = "#e9dca0"; ctx.fillRect(sx + 11, sy + 5, 2, 6); // lens
+    } else if (it.glyph === "b") {
+      // power cell — green battery with a charge tip
+      ctx.fillStyle = "#1f3a26"; ctx.fillRect(sx + 5, sy + 4, 6, 9);
+      ctx.fillStyle = "#3aa15a"; ctx.fillRect(sx + 6, sy + 5, 4, 7);
+      ctx.fillStyle = "#7fe0a0"; ctx.fillRect(sx + 7, sy + 3, 2, 2); // + terminal
+    } else if (it.glyph === "c") {
+      // keycard — flat card with a colored stripe
+      ctx.fillStyle = "#c9b070"; ctx.fillRect(sx + 4, sy + 6, 8, 5);
+      ctx.fillStyle = "#8a7840"; ctx.fillRect(sx + 4, sy + 6, 8, 1);
+      ctx.fillStyle = "#4aa3c8"; ctx.fillRect(sx + 5, sy + 8, 6, 1); // maint = blue stripe
+    } else if (it.glyph === "a") {
+      // containment override — a red-lit key module
+      ctx.fillStyle = "#3a1614"; ctx.fillRect(sx + 5, sy + 4, 6, 9);
+      ctx.fillStyle = "#7a2a22"; ctx.fillRect(sx + 6, sy + 5, 4, 7);
+      const p = 0.5 + Math.sin(time * 5) * 0.5;
+      ctx.fillStyle = `rgba(220,70,55,${0.5 + p * 0.5})`;
+      ctx.fillRect(sx + 7, sy + 6, 2, 2);
     } else if (it.glyph === "s") {
       // salvage trinket — a small pale object with a glint
-      ctx.fillStyle = "#9aa0a8";
-      ctx.fillRect(sx + 6, sy + 7, 4, 4);
-      ctx.fillStyle = "#e9dca0";
-      ctx.fillRect(sx + 6, sy + 7, 2, 2);
+      ctx.fillStyle = "#9aa0a8"; ctx.fillRect(sx + 6, sy + 7, 4, 4);
+      ctx.fillStyle = "#e9dca0"; ctx.fillRect(sx + 6, sy + 7, 2, 2);
     } else {
-      ctx.fillStyle = "#c9b070";
-      ctx.fillRect(sx + 5, sy + 6, 6, 5);
+      ctx.fillStyle = "#c9b070"; ctx.fillRect(sx + 5, sy + 6, 6, 5);
     }
   }
 

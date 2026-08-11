@@ -20,6 +20,7 @@
   let powered = false;
   let hasKeycard = false;
   let hasMaintKey = false;
+  let hasContainAuth = false;
   let time = 0;
   let last = 0;
   let ambientTimer = 4;
@@ -27,6 +28,7 @@
   let dread = 0;          // 0..1 sanity/dread meter
   let whisperTimer = 6;   // countdown to the next dread whisper
   let phantom = null;     // transient hallucination { x, y, t }
+  let gazeTarget = null;  // what the flashlight beam is currently naming
   let lastSafeTile = { x: 6, y: 29 };
 
   // Intro crawl queue
@@ -77,6 +79,7 @@
     powered = false;
     hasKeycard = false;
     hasMaintKey = false;
+    hasContainAuth = false;
     fear = 0;
     dread = 0;
     whisperTimer = 8;
@@ -85,7 +88,7 @@
 
     // Internal handle — lets tooling/tests inspect live state. Harmless.
     AURORA._state = () => ({
-      state, powered, hasKeycard, hasMaintKey,
+      state, powered, hasKeycard, hasMaintKey, hasContainAuth,
       hasFlashlight: player.hasFlashlight,
       flashlightOn: player.flashlightOn,
       battery: Math.round(player.battery),
@@ -173,6 +176,8 @@
     // Modal overlays freeze the world.
     if (UI.isModal()) {
       UI.handleModalKeys(input);
+      UI.gaze(null);
+      gazeTarget = null;
       return;
     }
 
@@ -213,6 +218,10 @@
 
     // Interactions
     handleInteraction();
+
+    // Flashlight scanner — name whatever the beam is pointed at.
+    gazeTarget = E.beamTarget(player);
+    UI.gaze(gazeTarget);
 
     // Ambient audio events
     ambientTimer -= dt;
@@ -283,7 +292,9 @@
       if (k === "log") label = "[ E ] read " + (near.ref.used ? "(again)" : "log");
       else if (k === "reactor") label = powered ? "[ E ] reactor online" : "[ E ] reactor console";
       else if (k === "safe") label = hasKeycard ? "[ E ] safe (empty)" : "[ E ] captain's safe";
-      else if (k === "broadcast") label = hasKeycard ? "[ E ] command console" : "[ E ] locked — needs command keycard";
+      else if (k === "broadcast") label = (hasKeycard && hasContainAuth) ? "[ E ] command console"
+        : !hasKeycard ? "[ E ] locked — needs command keycard"
+        : "[ E ] locked — needs containment override";
     } else if (near.type === "door") {
       if (near.ref.type === "keycard") label = hasKeycard ? "[ E ] use command keycard" : "[ E ] sealed — command keycard";
       else if (near.ref.type === "maintenance") label = hasMaintKey ? "[ E ] use maintenance keycard" : "[ E ] sealed — maintenance keycard";
@@ -310,7 +321,8 @@
       if (player.hasFlashlight) player.flashlightOn = true;
     }
     else if (it.kind === "maintkey") hasMaintKey = true;
-    UI.subtitle(it.pickup, it.kind === "salvage" ? 5.5 : 4.5);
+    else if (it.kind === "auth") hasContainAuth = true;
+    UI.subtitle(it.pickup, it.kind === "salvage" || it.kind === "auth" ? 5.5 : 4.5);
     updateObjective();
     updateInventory();
   }
@@ -352,7 +364,16 @@
       return;
     }
     if (t.kind === "broadcast") {
-      if (!hasKeycard) { UI.subtitle(t.lockedMsg, 3); audio.error(); return; }
+      if (!hasKeycard) {
+        UI.subtitle("COMMAND CONSOLE — locked. It needs the command keycard from the captain's safe.", 3.5);
+        audio.error();
+        return;
+      }
+      if (!hasContainAuth) {
+        UI.subtitle("COMMAND CONSOLE — authorization incomplete. Marrow sealed the override in Containment. You cannot choose for a station you have not seen.", 5);
+        audio.error();
+        return;
+      }
       UI.showChoice(onEndingChosen);
       return;
     }
@@ -397,6 +418,7 @@
     audio.setTension(0);
     if (which === "burn") { audio.stinger(); }
     else { audio.confirm(); }
+    gazeTarget = null; UI.gaze(null); UI.prompt(null);
     state = "over";
     UI.showEnd(ending);
   }
@@ -404,6 +426,7 @@
   function onCaught() {
     if (state !== "play") return;
     audio.stinger();
+    gazeTarget = null; UI.gaze(null); UI.prompt(null);
     state = "over";
     UI.showEnd(AURORA.story.death);
   }
@@ -425,11 +448,21 @@
   // ---------------- Objective HUD ----------------
   function updateObjective() {
     let html;
-    if (!player || !player.hasFlashlight) html = "OBJECTIVE<br/><b>Find a light source.</b>";
-    else if (!powered) html = "OBJECTIVE<br/><b>Restore main power — Reactor Control.</b><br/>Follow the corridor east.";
-    else if (!hasKeycard) html = "OBJECTIVE<br/><b>Find the command keycard.</b><br/>Search the crew quarters. Avoid the presence — use your light.";
-    else if (!World.isDoorOpen("bridge_door")) html = "OBJECTIVE<br/><b>Reach the Command Bridge.</b><br/>The command hatch will accept your keycard.";
-    else html = "OBJECTIVE<br/><b>Make Vance's choice at the command console.</b>";
+    if (!player || !player.hasFlashlight) {
+      html = "OBJECTIVE<br/><b>Find a light source.</b>";
+    } else if (!powered) {
+      html = "OBJECTIVE<br/><b>Restore main power — Reactor Control.</b><br/>Follow the corridor east.";
+    } else if (!hasMaintKey) {
+      html = "OBJECTIVE<br/><b>Explore the station. Learn what happened here.</b><br/>The far decks are open now — find a way into the sealed Containment cell.";
+    } else if (!hasContainAuth) {
+      html = "OBJECTIVE<br/><b>Open Containment.</b><br/>Your maintenance keycard fits the seal off Reactor Control. Take Marrow's override.";
+    } else if (!hasKeycard) {
+      html = "OBJECTIVE<br/><b>Find the command keycard.</b><br/>The captain's safe in Crew Quarters — its code is in the Research archives.";
+    } else if (!World.isDoorOpen("bridge_door")) {
+      html = "OBJECTIVE<br/><b>Reach the Command Bridge.</b><br/>The command hatch will accept your keycard.";
+    } else {
+      html = "OBJECTIVE<br/><b>Make your choice at the command console.</b>";
+    }
     UI.objective(html);
   }
 
@@ -443,8 +476,9 @@
     const fl = player.hasFlashlight ? "<span class='have'>✓ flashlight</span>" : "· flashlight";
     const kc = hasKeycard ? "<span class='have'>✓ cmd keycard</span>" : "· cmd keycard";
     const mk = hasMaintKey ? "<span class='have'>✓ maint keycard</span>" : "· maint keycard";
+    const au = hasContainAuth ? "<span class='have'>✓ override</span>" : "· override";
     UI.inventory(
-      `<b>GEAR</b><br/>${fl}<br/>${kc}<br/>${mk}<br/>` +
+      `<b>GEAR</b><br/>${fl}<br/>${kc}<br/>${mk}<br/>${au}<br/>` +
       `<b>LOGS</b> ${logsRead}/${logs.length}<br/>` +
       `<b>SALVAGE</b> ${salvageGot}/${salvage.length}`
     );
@@ -474,6 +508,9 @@
     // Emissive glints (terminals, item shimmer, the eyes) punch through dark
     E.drawEmissive(ctx, cam, powered, time);
 
+    // Scanner brackets around whatever the beam is naming.
+    if (gazeTarget) drawGazeBrackets();
+
     // Hallucinated phantom — pale eyes at the edge of vision, then gone.
     if (phantom) drawPhantom();
 
@@ -485,6 +522,26 @@
 
     // Film grain — thicker as dread rises.
     grain();
+  }
+
+  function drawGazeBrackets() {
+    const sx = Math.round(gazeTarget.x - cam.x);
+    const sy = Math.round(gazeTarget.y - cam.y);
+    const contact = gazeTarget.kind === "presence";
+    ctx.strokeStyle = contact ? "rgba(230,90,70,0.85)" : "rgba(150,220,180,0.7)";
+    ctx.lineWidth = 1;
+    const r = 8;
+    // four corner ticks
+    ctx.beginPath();
+    // TL
+    ctx.moveTo(sx - r, sy - r + 3); ctx.lineTo(sx - r, sy - r); ctx.lineTo(sx - r + 3, sy - r);
+    // TR
+    ctx.moveTo(sx + r - 3, sy - r); ctx.lineTo(sx + r, sy - r); ctx.lineTo(sx + r, sy - r + 3);
+    // BL
+    ctx.moveTo(sx - r, sy + r - 3); ctx.lineTo(sx - r, sy + r); ctx.lineTo(sx - r + 3, sy + r);
+    // BR
+    ctx.moveTo(sx + r - 3, sy + r); ctx.lineTo(sx + r, sy + r); ctx.lineTo(sx + r, sy + r - 3);
+    ctx.stroke();
   }
 
   function drawPhantom() {

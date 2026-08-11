@@ -138,6 +138,12 @@
       name: "MAINTENANCE KEYCARD",
       pickup: "A maintenance keycard, clipped to a work vest with no one in it. The containment deck is yours to open now.",
     },
+    // ---- Containment override: REQUIRED to use the bridge command console ----
+    {
+      id: "contain_auth", glyph: "a", x: 44, y: 40, kind: "auth",
+      name: "CONTAINMENT OVERRIDE",
+      pickup: "You take Marrow's override key from the dead cradle at the cage's heart. Only now will the bridge answer to you. Now you have seen what you are choosing for.",
+    },
   ];
 
   // --- Lockers: hide inside to break the presence's line of sight. ---
@@ -148,6 +154,40 @@
     { id: "lk_cargo1",  x: 54, y: 30 },
     { id: "lk_cargo2",  x: 67, y: 30 },
     { id: "lk_med",     x: 22, y: 10 },
+  ];
+
+  // --- Decorative props: non-blocking set dressing that gives each deck an
+  //     identity. Items with a `label` are named by the flashlight scanner. ---
+  STORY.props = [
+    // Docking Bay
+    { kind: "body", x: 10, y: 27, label: "DEAD RESPONDER" },
+    { kind: "crate", x: 4, y: 31 },
+    // Crew Quarters — bunks
+    { kind: "bunk", x: 5, y: 6 }, { kind: "bunk", x: 5, y: 9 },
+    { kind: "bunk", x: 15, y: 6 },
+    // Medical — beds
+    { kind: "medbed", x: 25, y: 6 }, { kind: "medbed", x: 28, y: 6 }, { kind: "medbed", x: 31, y: 6 },
+    // Hydroponics — overgrowth
+    { kind: "plant", x: 5, y: 16, label: "BLACK OVERGROWTH" }, { kind: "plant", x: 7, y: 21 },
+    { kind: "plant", x: 12, y: 16 }, { kind: "plant", x: 10, y: 20 },
+    // Research — benches + a body
+    { kind: "bench", x: 46, y: 10 }, { kind: "bench", x: 49, y: 6 },
+    { kind: "body", x: 42, y: 11, label: "RESEARCHER'S REMAINS" },
+    // Reactor Control — the core
+    { kind: "core", x: 40, y: 29, label: "REACTOR CORE" },
+    // Cryogenics — pods
+    { kind: "pod", x: 59, y: 6, label: "CRYO POD — OCCUPIED" }, { kind: "pod", x: 63, y: 6, label: "CRYO POD — OCCUPIED" },
+    { kind: "pod", x: 59, y: 12, label: "CRYO POD — OCCUPIED" },
+    { kind: "podopen", x: 65, y: 12, label: "CRYO POD 3 — FORCED OPEN" },
+    // Observation — the comet beyond the glass
+    { kind: "comet", x: 63, y: 19, label: "THE COMET — SOURCE" },
+    // Cargo — crates
+    { kind: "crate", x: 56, y: 31 }, { kind: "crate", x: 63, y: 31 }, { kind: "crate", x: 57, y: 36 },
+    { kind: "crateopen", x: 65, y: 31, label: "CRATE C-7 — EMPTY" },
+    // Containment — the cradle at the cage's heart
+    { kind: "cradle", x: 41, y: 38, label: "CONTAINMENT CRADLE" },
+    // Junction
+    { kind: "body", x: 24, y: 30, label: "CREW REMAINS" },
   ];
 
   // --- Interactive consoles / terminals / puzzles. ---
@@ -513,6 +553,7 @@ I couldn't choose. Marrow, L. — the last light on Aurora-9.`,
 
   // Intro crawl shown once at boot.
   STORY.intro = [
+    "THE AURORA SIGNAL — EPISODE ONE: \"DEAD AIR\"",
     "SALVAGE VESSEL KESTREL — solo responder.",
     "Contract: investigate a 63-day distress loop from deep-survey station AURORA-9.",
     "Docking clamp engaged. Life support: marginal. Main power: OFFLINE.",
@@ -538,7 +579,13 @@ and watches your engine-light dwindle into a dark it cannot cross.
 
 You kept the hope Vance lost. You warned them.
 
-— END —`,
+— EPISODE ONE — END —
+
+Two light-days coreward, a relay station wakes to your warning.
+A dispatcher named Okonkwo leans toward the screen, and frowns,
+and does not yet reach for the light switch.
+
+[ THE AURORA SIGNAL CONTINUES — EPISODE TWO: "LANDFALL" ]`,
     },
     burn: {
       cls: "bad",
@@ -557,7 +604,16 @@ almost gentle. No more loop. No more window. No more patience.
 
 You burned it all down with them. Vance would understand.
 
-— END —`,
+— EPISODE ONE — END —
+
+The flash reaches the core worlds nine days later, a new false star
+low on the horizon of a planet you used to call home. In a harbor town,
+a boy watches it fade and asks his mother what it was.
+
+She tells him it was nothing. She has already stopped believing in
+nothing.
+
+[ THE AURORA SIGNAL CONTINUES — EPISODE TWO: "LANDFALL" ]`,
     },
     leave: {
       cls: "bad",
@@ -578,7 +634,14 @@ It is already watching the dark for whoever comes next.
 You told yourself it wasn't your choice to make.
 It was. You made it.
 
-— END —`,
+— EPISODE ONE — END —
+
+The Kestrel's autopilot is already set for home. You sleep the whole
+way, and you do not dream, and behind you the loop keeps calling into
+the dark — patient, and baited, and answered at last by a freighter
+that alters course, lights blazing, and begins the long fall inward.
+
+[ THE AURORA SIGNAL CONTINUES — EPISODE TWO: "LANDFALL" ]`,
     },
   };
 
