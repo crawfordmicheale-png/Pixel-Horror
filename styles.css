@@ -77,6 +77,13 @@ html, body {
 
 /* ---------- Title screen ---------- */
 .title-inner { text-align: center; animation: flickerIn 1.2s ease-out; }
+.title-tag {
+  font-size: clamp(10px, 1.8vw, 13px);
+  letter-spacing: 0.42em;
+  color: var(--amber-dim);
+  margin-bottom: 18px;
+  text-transform: uppercase;
+}
 .title-main {
   font-size: clamp(38px, 9vw, 92px);
   font-weight: bold;
@@ -209,6 +216,26 @@ html, body {
   font-style: italic;
 }
 .subtitle.show { opacity: 1; }
+
+.gaze {
+  position: absolute;
+  top: 10%;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 55;
+  font-size: 12px;
+  letter-spacing: 0.22em;
+  color: #cbe6d6;
+  text-shadow: 0 0 8px rgba(120,220,170,0.5), 0 1px 3px #000;
+  pointer-events: none;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.12s ease;
+}
+.gaze.show { opacity: 0.92; }
+.gaze::before { content: "▸ "; color: var(--green); }
+.gaze.contact { color: #f0b8b0; text-shadow: 0 0 10px rgba(220,80,60,0.6), 0 1px 3px #000; }
+.gaze.contact::before { content: ""; }
 
 .prompt {
   position: absolute;

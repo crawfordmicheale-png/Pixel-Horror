@@ -1,7 +1,11 @@
-# STATION AURORA-9
+# THE AURORA SIGNAL — Episode One: "Dead Air"
 
-A pixel-art horror game about a dead deep-space station, a flashlight, and
-something that only moves in the dark.
+### STATION AURORA-9
+
+The first episode of a planned series. A pixel-art horror game about a dead
+deep-space station, a flashlight, and something that only moves in the dark.
+Later episodes follow the signal back home, through different survivors at
+different points along its path.
 
 Heavy on **atmosphere and narrative**, built around **exploration and mystery
 solving**. There is **no combat** — your only defense is light, and your only
@@ -58,12 +62,31 @@ Vance couldn't: **warn the fleet, or burn it all down.**
 
 ### Objectives (spoiler-light)
 
+The finale is **gated behind exploration** — you cannot end the story until
+you've been to the far side of the station and seen what it holds.
+
 1. **Find a light source** in the docking bay.
 2. **Restore main power** at Reactor Control — the ignition code is in a
    crew log nearby.
-3. **Recover the command keycard** from the captain's safe — its code is
-   hidden in the research archives, which only open once power is on.
-4. **Reach the Command Bridge** and decide how the loop ends.
+3. **Explore the far decks** the power unlocks: find the maintenance keycard
+   in Cargo, open **Containment**, and take Marrow's override — the only thing
+   that will authorize the bridge console.
+4. **Recover the command keycard** from the captain's safe — its code is
+   hidden in the research archives.
+5. **Reach the Command Bridge** and decide how the loop ends.
+
+> The command console refuses to arm until you hold *both* the command keycard
+> and the Containment override — so no ending is reachable on a straight dash
+> to the bridge.
+
+### Reading the dark
+
+Point your flashlight at anything and a **scanner readout** names it — a crew
+log, a power cell, a supply locker, a cryo pod… or a **`◄ CONTACT ►`** you'd
+rather not have found — with a bracket drawn around whatever you're looking at.
+Every deck is dressed with its own props (cryo pods, cargo crates, medical
+beds, the reactor core, the comet beyond the observation glass) so you always
+know where you are and what you're seeing.
 
 The presence awakens when the power comes on. **Keep your beam on it to freeze
 it; look away and it closes in.** Bright rooms hold it back. If it catches you,
