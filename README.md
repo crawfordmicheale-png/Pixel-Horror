@@ -21,6 +21,22 @@ weapons are patience and the truth you piece together from the crew's logs.
 no server. Headphones strongly recommended — the entire soundtrack (reactor
 drone, hull groans, heartbeat, stingers) is synthesized live in your browser.
 
+The title screen shows a **build stamp** (e.g. `build e1r4 · 2026-08-11`) so
+you can confirm which version you're running.
+
+### Not seeing your latest changes?
+
+Browsers cache the game's script files. The page is versioned to bust that
+automatically going forward, but if you're still on an old build:
+
+1. **Hard-refresh** to bypass the cache: `Ctrl`+`Shift`+`R` (Windows/Linux) or
+   `Cmd`+`Shift`+`R` (macOS). In Chrome you can also open DevTools, then
+   right-click the reload button → **Empty Cache and Hard Reload**.
+2. **Confirm you opened the current files** — if you're opening a copy you
+   downloaded or cloned earlier, `git pull` (or re-download) first; an old
+   local `index.html` will never change no matter what's on GitHub.
+3. **Check the build stamp** on the title screen matches the latest release.
+
 ### Controls
 
 **Keyboard**
